@@ -1,4 +1,4 @@
-name: Simple Deploy
+name: Auto Deploy
 
 on:
     push:
@@ -8,7 +8,7 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            - name: Deploy via SSH
+            - name: Deploy
               uses: appleboy/ssh-action@master
               with:
                   host: ${{ secrets.SERVER_IP }}
@@ -16,15 +16,12 @@ jobs:
                   key: ${{ secrets.DEPLOY_SSH_KEY }}
                   script: |
                       sudo rm -f /var/www/html/index.html
-
-                      mkdir -p ~/temp-repo
-                      cd ~/temp-repo
-                      if [ ! -d .git ]; then rm -rf *; git clone https://github.com/${{ github.repository }}.git .; else git pull; fi
-
+                      mkdir -p ~/repo-temp
+                      cd ~/repo-temp
+                      git clone https://github.com/Oghenekparobo/hng13-stage0-devops.git . || git pull
                       sudo cp index.html /var/www/html/index.html
                       sudo chown www-data:www-data /var/www/html/index.html
                       sudo chmod 644 /var/www/html/index.html
-
                       sudo nginx -t && sudo systemctl reload nginx
-
-                      rm -rf ~/temp-repo
+                      cd ~
+                      rm -rf repo-temp
